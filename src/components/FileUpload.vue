@@ -1,16 +1,18 @@
-<!-- FileUpload.vue -->
 <template>
   <div id="file-drop" @dragover.prevent @drop="handleDrop">
     <input type="file" ref="fileInput" @change="handleFileSelect" style="display: none" />
-    <div v-if="!file" @click="triggerFileInput">
-      <p>Drag your files here or click to select files</p>
-    </div>
-    <div v-else>
-      <p>{{ file.name }}</p>
-      <div class="progress">
-        <div class="progress-bar" :style="{ width: progress + '%' }"></div>
+    <div>
+      <div v-if="!file" @click="triggerFileInput" class="upload-area">
+        <p>Drag your files here or click to select files</p>
+      </div>
+      <div v-else>
+        <p>{{ file.name }}</p>
+        <div class="progress">
+          <div class="progress-bar" :style="{ width: progress + '%' }"></div>
+        </div>
       </div>
     </div>
+    <button v-if="file" @click="uploadFile" class="submit-button">Upload</button>
   </div>
 </template>
 
@@ -26,16 +28,12 @@ export default {
     handleDrop(event) {
       event.preventDefault();
       this.file = event.dataTransfer.files[0];
-      this.uploadFile();
     },
     triggerFileInput() {
-      // Click on the hidden file input element when the user clicks on the message
       this.$refs.fileInput.click();
     },
     handleFileSelect() {
-      // Handle file selection when the user selects a file using the file input
       this.file = this.$refs.fileInput.files[0];
-      this.uploadFile();
     },
     uploadFile() {
       if (!this.file) {
@@ -45,7 +43,6 @@ export default {
       const formData = new FormData();
       formData.append('file', this.file);
 
-      // Update the backend endpoint
       const uploadEndpoint = 'http://localhost:3000/upload';
 
       const config = {
@@ -57,17 +54,11 @@ export default {
         },
       };
 
-      // this.$axios.post(uploadEndpoint, formData, config)
-      //   .then(() => {
-      //     console.log('Upload complete!');
-      //   })
-      //   .catch((error) => {
-      //     console.error('Error uploading file:', error);
-      //   });
-
-      this.axios.post(uploadEndpoint, formData, config)
+      this.$axios.post(uploadEndpoint, formData, config)
         .then(() => {
           console.log('Upload complete!');
+          this.file = null;
+          this.progress = 0;
         })
         .catch((error) => {
           console.error('Error uploading file:', error);
@@ -85,6 +76,10 @@ export default {
   cursor: pointer;
 }
 
+.upload-area {
+  cursor: pointer;
+}
+
 .progress {
   height: 20px;
   margin-top: 10px;
@@ -93,5 +88,15 @@ export default {
 .progress-bar {
   height: 100%;
   background: #4caf50;
+}
+
+.submit-button {
+  margin-top: 10px;
+  background-color: #4caf50;
+  color: white;
+  padding: 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
 }
 </style>
